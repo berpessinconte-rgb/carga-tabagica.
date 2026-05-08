@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora de Tabagismo</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, #334155 0%, #0f172a 55%, #020617 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 24px;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+    #splash.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .splash-card {
+      text-align: center;
+      max-width: 760px;
+      padding: 34px 22px;
+    }
+    .splash-title {
+      font-size: clamp(30px, 7vw, 58px);
+      line-height: 1.05;
+      margin: 0;
+      letter-spacing: -0.05em;
+      font-weight: 900;
+    }
+    .splash-subtitle {
+      margin: 18px 0 0;
+      color: #cbd5e1;
+      font-size: 17px;
+    }
+    .advance-btn {
+      margin-top: 30px;
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      border: 0;
+      background: white;
+      color: #0f172a;
+      font-size: 34px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 14px 38px rgba(0,0,0,0.35);
+      transition: transform 0.18s ease, background 0.18s ease;
+    }
+    .advance-btn:hover {
+      transform: scale(1.08);
+      background: #e2e8f0;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 16px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .badge {
+      display: inline-block;
+      background: white;
+      padding: 8px 14px;
+      border-radius: 999px;
+      box-shadow: 0 1px 5px rgba(15,23,42,0.08);
+      color: #475569;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 5vw, 46px);
+      letter-spacing: -0.04em;
+    }
+    .subtitle {
+      color: #475569;
+      max-width: 720px;
+      margin: 12px auto 0;
+      line-height: 1.5;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+    @media (min-width: 900px) {
+      .grid-main { grid-template-columns: 1fr 2fr; }
+      .grid-results { grid-template-columns: 1fr 1fr; }
+      .grid-2 { grid-template-columns: 1fr 1fr; }
+      .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+    }
+    .card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 1px 6px rgba(15,23,42,0.06);
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    input[type="number"] {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    input[type="range"] {
+      width: 100%;
+    }
+    .field {
+      margin-bottom: 16px;
+    }
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .muted {
+      color: #64748b;
+      font-size: 13px;
+    }
+    .result .icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+    .result-title {
+      color: #64748b;
+      font-size: 14px;
+      margin: 0 0 6px;
+    }
+    .result-value {
+      margin: 0;
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+    .result-subtitle {
+      color: #64748b;
+      font-size: 14px;
+      margin: 8px 0 0;
+    }
+    .button {
+      border: 0;
+      background: #0f172a;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 18px;
+      font-size: 15px;
+    }
+    .button:hover { background: #334155; }
+    .secondary-button {
+      border: 1px solid #cbd5e1;
+      background: white;
+      color: #0f172a;
+      padding: 12px 18px;
+      border-radius: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 18px;
+      margin-left: 8px;
+      font-size: 15px;
+    }
+    .secondary-button:hover { background: #f1f5f9; }
+    .section { margin-top: 18px; }
+    .pdf-area h2 { margin-top: 0; }
+    .patient-box, .highlight {
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .highlight { background: #f8fafc; }
+    .highlight .value {
+      font-size: 26px;
+      font-weight: 800;
+      margin-top: 6px;
+    }
+    .message {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 18px;
+      line-height: 1.55;
+    }
+    .footer-note {
+      color: #64748b;
+      font-size: 12px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 14px;
+    }
+    @media print {
+      body { background: white; }
+      #splash { display: none !important; }
+      .no-print { display: none !important; }
+      .container { max-width: none; padding: 0; }
+      .card { box-shadow: none; }
+      .pdf-area { border: none; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="splash">
+    <div class="splash-card">
+      <h1 class="splash-title">Do insubstituível Ber do coração de vcs :)</h1>
+      <p class="splash-subtitle">Calculadora de tabagismo</p>
+      <button class="advance-btn" onclick="entrar()" aria-label="Avançar">→</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <div class="badge no-print">🚬 Calculadora de tabagismo</div>
+      <h1>Carga tabágica, gasto e custo de oportunidade</h1>
+      <p class="subtitle no-print">Simule maços-ano, cigarros fumados, gasto acumulado e quanto esse valor poderia render se fosse investido mensalmente.</p>
+      <button class="button no-print" onclick="window.print()">Gerar PDF para o paciente</button>
+      <button class="secondary-button no-print" onclick="voltarInicio()">Tela inicial</button>
+    </header>
+
+    <main class="grid grid-main no-print">
+      <section class="card">
+        <h2>Dados de entrada</h2>
+
+        <div class="field">
+          <label>Idade atual</label>
+          <div class="input-row"><input id="idade" type="number" value="47" min="0" step="1"><span class="muted">anos</span></div>
+        </div>
+
+        <div class="field">
+          <label>Começou a fumar com</label>
+          <div class="input-row"><input id="idadeInicio" type="number" value="14" min="0" step="1"><span class="muted">anos</span></div>
+        </div>
+
+        <div class="field">
+          <label>Tempo total sem fumar</label>
+          <div class="input-row"><input id="anosPausa" type="number" value="12" min="0" step="1"><span class="muted">anos</span></div>
+        </div>
+
+        <div class="field">
+          <label>Consumo médio</label>
+          <div class="input-row"><input id="macosDia" type="number" value="1" min="0" step="0.25"><span class="muted">maço(s)/dia</span></div>
+        </div>
+
+        <div class="field">
+          <label>Preço do maço</label>
+          <div class="input-row"><span class="muted">R$</span><input id="precoMaco" type="number" value="10" min="0" step="0.5"></div>
+        </div>
+
+        <div class="field">
+          <label>Rendimento mensal: <span id="jurosLabel">1.00%</span></label>
+          <input id="jurosMes" type="range" value="1" min="0" max="2" step="0.05">
+          <p class="muted">Exemplo: 1% ao mês. Simulação bruta, sem imposto, inflação ou variação de mercado.</p>
+        </div>
+      </section>
+
+      <section class="grid grid-results">
+        <div class="card result">
+          <div class="icon">🚬</div>
+          <p class="result-title">Carga tabágica</p>
+          <p class="result-value" id="cargaTabagica"></p>
+          <p class="result-subtitle" id="anosFumando"></p>
+        </div>
+        <div class="card result">
+          <div class="icon">🫁</div>
+          <p class="result-title">Cigarros fumados</p>
+          <p class="result-value" id="cigarrosVida"></p>
+          <p class="result-subtitle" id="cigarrosDia"></p>
+        </div>
+        <div class="card result">
+          <div class="icon">💸</div>
+          <p class="result-title">Gasto total</p>
+          <p class="result-value" id="gastoTotal"></p>
+          <p class="result-subtitle" id="gastoMensalAnual"></p>
+        </div>
+        <div class="card result">
+          <div class="icon">🐷</div>
+          <p class="result-title">Se investisse</p>
+          <p class="result-value" id="investimentoFinal"></p>
+          <p class="result-subtitle" id="investimentoSubtitle"></p>
+        </div>
+      </section>
+    </main>
+
+    <section class="card section no-print">
+      <h2>Resumo para orientação</h2>
+      <div class="grid grid-3">
+        <div class="highlight">
+          <div class="muted">Tempo desde o início</div>
+          <div class="value" id="tempoDesdeInicio"></div>
+        </div>
+        <div class="highlight">
+          <div class="muted">Economia ao parar por mês</div>
+          <div class="value" id="economiaMes"></div>
+        </div>
+        <div class="highlight">
+          <div class="muted">Rendimento potencial estimado</div>
+          <div class="value" id="rendimento"></div>
+        </div>
+      </div>
+      <p class="muted">Fórmula da carga tabágica: maços por dia × anos efetivos fumando. Para pacientes que pararam por períodos longos, desconta-se o tempo sem fumar.</p>
+    </section>
+
+    <section class="card section pdf-area">
+      <div style="border-bottom:1px solid #e2e8f0; padding-bottom:14px;">
+        <p class="muted" style="text-transform:uppercase; letter-spacing:.08em;">Relatório para o paciente</p>
+        <h2>Impacto do tabagismo</h2>
+        <p class="muted">Estimativa educativa baseada nos dados informados.</p>
+      </div>
+
+      <div class="grid grid-2 section">
+        <div class="patient-box"><div class="muted">Idade atual</div><strong id="pdfIdade"></strong></div>
+        <div class="patient-box"><div class="muted">Início do tabagismo</div><strong id="pdfInicio"></strong></div>
+        <div class="patient-box"><div class="muted">Tempo efetivo fumando</div><strong id="pdfAnosFumando"></strong></div>
+        <div class="patient-box"><div class="muted">Consumo médio</div><strong id="pdfConsumo"></strong></div>
+      </div>
+
+      <div class="grid grid-2 section">
+        <div class="highlight"><div class="muted">Carga tabágica</div><div class="value" id="pdfCarga"></div></div>
+        <div class="highlight"><div class="muted">Cigarros estimados na vida</div><div class="value" id="pdfCigarros"></div></div>
+        <div class="highlight"><div class="muted">Gasto total estimado</div><div class="value" id="pdfGasto"></div></div>
+        <div class="highlight"><div class="muted">Se esse valor fosse investido</div><div class="value" id="pdfInvestimento"></div></div>
+      </div>
+
+      <div class="message section">
+        <h3>Mensagem importante</h3>
+        <p>Parar de fumar reduz riscos cardiovasculares, respiratórios e oncológicos ao longo do tempo. Além do benefício para a saúde, a economia mensal estimada neste caso seria de <strong id="pdfEconomia"></strong>, valor que poderia ser usado em objetivos pessoais, saúde, lazer ou investimento.</p>
+      </div>
+
+      <p class="footer-note">Observação: este relatório é uma estimativa educativa. A simulação financeira é bruta, sem considerar inflação, impostos, taxas, variação de mercado ou mudança no preço do cigarro.</p>
+    </section>
+  </div>
+
+  <script>
+    function entrar() {
+      document.getElementById("splash").classList.add("hidden");
+    }
+
+    function voltarInicio() {
+      document.getElementById("splash").classList.remove("hidden");
+    }
+
+    const ids = ["idade","idadeInicio","anosPausa","macosDia","precoMaco","jurosMes"];
+    ids.forEach(id => document.getElementById(id).addEventListener("input", calcular));
+
+    function brl(v) {
+      return Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+    }
+    function num(v) {
+      return Number(v || 0).toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+    }
+    function get(id) {
+      return Number(document.getElementById(id).value || 0);
+    }
+    function set(id, value) {
+      document.getElementById(id).textContent = value;
+    }
+
+    function calcular() {
+      const idade = get("idade");
+      const idadeInicio = get("idadeInicio");
+      const anosPausa = get("anosPausa");
+      const macosDia = get("macosDia");
+      const precoMaco = get("precoMaco");
+      const jurosMes = get("jurosMes");
+
+      const anosDesdeInicio = Math.max(0, idade - idadeInicio);
+      const anosFumando = Math.max(0, anosDesdeInicio - anosPausa);
+      const mesesFumando = anosFumando * 12;
+
+      const cargaTabagica = macosDia * anosFumando;
+      const cigarrosDia = macosDia * 20;
+      const cigarrosAno = cigarrosDia * 365;
+      const cigarrosVida = cigarrosAno * anosFumando;
+
+      const gastoDia = precoMaco * macosDia;
+      const gastoMes = gastoDia * 30;
+      const gastoAno = gastoDia * 365;
+      const gastoTotal = gastoAno * anosFumando;
+
+      const taxa = jurosMes / 100;
+      const investimentoFinal = taxa > 0
+        ? gastoMes * ((Math.pow(1 + taxa, mesesFumando) - 1) / taxa)
+        : gastoMes * mesesFumando;
+      const rendimento = investimentoFinal - gastoTotal;
+
+      set("jurosLabel", jurosMes.toFixed(2) + "%");
+      set("cargaTabagica", num(cargaTabagica) + " maços-ano");
+      set("anosFumando", num(anosFumando) + " anos efetivos fumando");
+      set("cigarrosVida", num(cigarrosVida));
+      set("cigarrosDia", num(cigarrosDia) + " cigarros/dia");
+      set("gastoTotal", brl(gastoTotal));
+      set("gastoMensalAnual", brl(gastoMes) + "/mês | " + brl(gastoAno) + "/ano");
+      set("investimentoFinal", brl(investimentoFinal));
+      set("investimentoSubtitle", "A " + jurosMes.toFixed(2) + "% ao mês por " + num(anosFumando) + " anos");
+      set("tempoDesdeInicio", num(anosDesdeInicio) + " anos");
+      set("economiaMes", brl(gastoMes));
+      set("rendimento", brl(rendimento));
+
+      set("pdfIdade", idade + " anos");
+      set("pdfInicio", idadeInicio + " anos");
+      set("pdfAnosFumando", num(anosFumando) + " anos");
+      set("pdfConsumo", num(macosDia) + " maço(s)/dia");
+      set("pdfCarga", num(cargaTabagica) + " maços-ano");
+      set("pdfCigarros", num(cigarrosVida));
+      set("pdfGasto", brl(gastoTotal));
+      set("pdfInvestimento", brl(investimentoFinal));
+      set("pdfEconomia", brl(gastoMes));
+    }
+
+    calcular();
+  </script>
+</body>
+</html>
